@@ -1,10 +1,16 @@
 import { motion } from 'motion/react';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { ImageWithFallback } from './ui/ImageWithFallback';
+import React from 'react';
+
+const mascote2 = new URL('../../assets/mascote-2-svg.svg', import.meta.url).href;
 
 export function Hero() {
   return (
-    <section id="home" className="min-h-screen flex items-center justify-center relative overflow-hidden">
+    <section
+      id="home"
+      className="min-h-screen flex items-start md:items-start lg:items-center justify-center relative overflow-hidden pt-32 md:pt-24 lg:pt-0 scroll-mt-32 md:scroll-mt-24 lg:scroll-mt-0"
+    >
       {/* Animated Background with 3D Elements */}
       <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-green-950">
         {/* Large blurred 3D spheres */}
@@ -218,14 +224,14 @@ export function Hero() {
                 style={{ transformStyle: 'preserve-3d' }}
               >
                 <ImageWithFallback
-                  src="https://images.unsplash.com/photo-1751554933476-d029737d58b2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHwzRCUyMHJvYm90JTIwdGVjaG5vbG9neSUyMGdyZWVufGVufDF8fHx8MTc3MTU5MjI4NXww&ixlib=rb-4.1.0&q=80&w=1080"
+                  src={mascote2}
                   alt="Astra Tech Robot"
-                  className="w-[400px] h-[400px] sm:w-[500px] sm:h-[500px] object-contain drop-shadow-[0_35px_70px_rgba(34,197,94,0.5)]"
+                  className="w-[400px] h-[400px] sm:w-[400px] sm:h-[400px] object-contain drop-shadow-[0_35px_70px_rgba(34,197,94,0.5)]"
                   style={{
                     filter: 'drop-shadow(0 0 80px rgba(34, 197, 94, 0.4))'
                   }}
                 />
-                
+
                 {/* Glowing base platform */}
                 <motion.div
                   animate={{
@@ -239,7 +245,7 @@ export function Hero() {
                   }}
                   className="absolute -bottom-20 left-1/2 -translate-x-1/2 w-64 h-32 bg-green-500/40 blur-3xl rounded-full"
                 />
-                
+
                 {/* Orbiting rings */}
                 <motion.div
                   animate={{
@@ -251,7 +257,7 @@ export function Hero() {
                     scale: { duration: 3, repeat: Infinity, ease: "easeInOut" }
                   }}
                   className="absolute inset-0 border-2 border-green-400/30 rounded-full"
-                  style={{ 
+                  style={{
                     transform: 'translateZ(-30px) scale(1.2)',
                     transformStyle: 'preserve-3d'
                   }}

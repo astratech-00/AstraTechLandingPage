@@ -1,8 +1,13 @@
 import { motion } from 'motion/react';
 import { useInView } from 'motion/react';
 import { useRef } from 'react';
-import { Linkedin, Github, Mail } from 'lucide-react';
+import { LinkedinIcon, Github, Mail, FolderIcon } from 'lucide-react';
 import { ImageWithFallback } from './ui/ImageWithFallback';
+import React from 'react';
+
+const taynara = new URL('../../assets/taynara.jpeg', import.meta.url).href;
+const thiago = new URL('../../assets/thiago.jpeg', import.meta.url).href;
+
 
 export function Founders() {
   const ref = useRef(null);
@@ -10,16 +15,22 @@ export function Founders() {
 
   const founders = [
     {
-      name: "Taynara",
-      role: "Co-Fundadora & Desenvolvedora",
-      image: "https://images.unsplash.com/photo-1720874129553-1d2e66076b16?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjB3b21hbiUyMHRlY2glMjBlbnRyZXByZW5ldXIlMjBwb3J0cmFpdHxlbnwxfHx8fDE3NzE1OTA2NjF8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      bio: "Especialista em desenvolvimento frontend e UX/UI, com paixão por criar experiências digitais incríveis."
+      name: "Taynara Muniz",
+      role: "Co-Fundadora & Especialista em UX/UI",
+      image: taynara,
+      bio: "Especialista em Experiência do Usuário, com atuação também em Análise de Requisitos. A experiência conecta necessidades do negócio e do usuário, com foco na criação de soluções eficientes. Possui experiência em pesquisa, levantamento e análise de necessidades do projeto, construção de fluxos e design de interfaces.",
+      linkedin: "https://www.linkedin.com/in/taynaramuniz/",
+      portifolio: "https://taynaramuniz.webflow.io/",
+      email: "taynaramunizg@gmail.com"
     },
     {
-      name: "Thiago",
+      name: "Thiago Lago",
       role: "Co-Fundador & Desenvolvedor",
-      image: "https://images.unsplash.com/photo-1767880239595-f4ea13b5c78c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBtYW4lMjB0ZWNoJTIwZW50cmVwcmVuZXVyJTIwcG9ydHJhaXR8ZW58MXx8fHwxNzcxNTgwNTA1fDA&ixlib=rb-4.1.0&q=80&w=1080",
-      bio: "Expert em arquitetura de sistemas e backend, focado em construir soluções escaláveis e robustas."
+      image: thiago,
+      bio: "Engenheiro de Software Sênior com mais de 8 anos de experiência em desenvolvimento frontend e mobile, atuando com as tecnologias mais modernas no mercado. Experiência na construção e evolução de sistemas escaláveis em diferentes setores, incluindo governo, automotivo e financeiro. Atuação em liderança técnica, modernização de arquiteturas legadas e desenvolvimento de aplicações web e mobile com foco em performance, qualidade de código e experiência do usuário.",
+      linkedin: "https://www.linkedin.com/in/thiagolago/",
+      portifolio: "https://github.com/thiagolago1",
+      email: "thiagolago1@gmail.com"
     }
   ];
 
@@ -99,27 +110,40 @@ export function Founders() {
 
                 {/* Social Links */}
                 <div className="flex gap-4">
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="w-10 h-10 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center justify-center hover:bg-green-500/20 transition-colors"
-                  >
-                    <Linkedin className="w-5 h-5 text-green-400" />
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="w-10 h-10 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center justify-center hover:bg-green-500/20 transition-colors"
-                  >
-                    <Github className="w-5 h-5 text-green-400" />
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="w-10 h-10 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center justify-center hover:bg-green-500/20 transition-colors"
-                  >
-                    <Mail className="w-5 h-5 text-green-400" />
-                  </motion.button>
+                  {founder.linkedin && (
+                    <motion.a
+                      href={founder.linkedin}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="w-10 h-10 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center justify-center hover:bg-green-500/20 transition-colors"
+                    >
+                      <LinkedinIcon className="w-5 h-5 text-green-400" />
+                    </motion.a>
+                  )}
+                  {founder.portifolio && (
+                    <motion.a
+                      href={founder.portifolio}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="w-10 h-10 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center justify-center hover:bg-green-500/20 transition-colors"
+                    >
+                      {index == 0 ? <FolderIcon className="w-5 h-5 text-green-400" /> : <Github className="w-5 h-5 text-green-400" />}
+                    </motion.a>
+                  )}
+                  {founder.email && (
+                    <motion.a
+                      href={`mailto:${founder.email}`}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="w-10 h-10 bg-green-500/10 border border-green-500/30 rounded-lg flex items-center justify-center hover:bg-green-500/20 transition-colors"
+                    >
+                      <Mail className="w-5 h-5 text-green-400" />
+                    </motion.a>
+                  )}
                 </div>
               </div>
 

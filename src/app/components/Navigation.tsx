@@ -2,6 +2,10 @@ import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Menu, X } from 'lucide-react';
 import { ImageWithFallback } from './ui/ImageWithFallback';
+import React from 'react';
+
+const logoVerde = new URL('../../assets/logo-verde-quadrado-arredondado.svg', import.meta.url).href;
+
 
 export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -50,23 +54,11 @@ export function Navigation() {
               document.querySelector('#home')?.scrollIntoView({ behavior: 'smooth' });
             }}
           >
-            <motion.div
-              animate={{ 
-                rotateY: [0, 360],
-              }}
-              transition={{
-                duration: 4,
-                repeat: Infinity,
-                ease: "linear"
-              }}
-              style={{ transformStyle: 'preserve-3d' }}
-            >
               <ImageWithFallback
-                src="https://images.unsplash.com/photo-1751554933476-d029737d58b2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHwzRCUyMHJvYm90JTIwdGVjaG5vbG9neSUyMGdyZWVufGVufDF8fHx8MTc3MTU5MjI4NXww&ixlib=rb-4.1.0&q=80&w=1080"
+                src={logoVerde}
                 alt="Astra Tech"
                 className="w-10 h-10 object-contain"
               />
-            </motion.div>
             <span className="text-white font-bold text-xl">Astra Tech</span>
           </motion.div>
 
@@ -100,7 +92,7 @@ export function Navigation() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden pb-4"
+            className="md:hidden pb-4 pt-2 bg-black/90 backdrop-blur-lg border-t border-white/10 space-y-1 px-4"
           >
             {navItems.map((item) => (
               <a

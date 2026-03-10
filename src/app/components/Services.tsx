@@ -2,6 +2,7 @@ import { motion } from 'motion/react';
 import { useInView } from 'motion/react';
 import { useRef } from 'react';
 import { Smartphone, Globe, Layout, Server, Database, Palette } from 'lucide-react';
+import React from 'react';
 
 export function Services() {
   const ref = useRef(null);
@@ -12,25 +13,25 @@ export function Services() {
       icon: <Smartphone className="w-10 h-10" />,
       title: "Aplicativos Mobile",
       description: "Apps nativos e híbridos para iOS e Android com performance excepcional",
-      features: ["React Native", "Flutter", "UX/UI Design"]
+      features: ["React Native", "Expo", "UX/UI Design"]
     },
     {
       icon: <Globe className="w-10 h-10" />,
       title: "Websites",
       description: "Sites modernos, responsivos e otimizados para conversão",
-      features: ["React", "Next.js", "SEO"]
+      features: ["React", "Next.js", "Nuxt.js", "Vue.js", "SEO", "Analytics"]
     },
     {
       icon: <Layout className="w-10 h-10" />,
       title: "Sistemas Web",
       description: "Plataformas web completas e escaláveis para seu negócio",
-      features: ["Dashboard", "APIs", "Integrações"]
+      features: ["Dashboard", "APIs", "Integrações", "Pagamentos"]
     },
     {
       icon: <Server className="w-10 h-10" />,
       title: "Backend & APIs",
       description: "Arquitetura robusta e APIs RESTful para suas aplicações",
-      features: ["Node.js", "Python", "Cloud"]
+      features: ["Node.js", "Cloud", "Docker", "Kubernetes"]
     },
     {
       icon: <Database className="w-10 h-10" />,
