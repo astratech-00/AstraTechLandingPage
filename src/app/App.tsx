@@ -2,6 +2,7 @@ import React from 'react';
 import { Hero } from './components/Hero';
 import { About } from './components/About';
 import { Services } from './components/Services';
+import { Projects } from './components/Projects';
 import { Founders } from './components/Founders';
 import { Contact } from './components/Contact';
 import { Navigation } from './components/Navigation';
@@ -13,6 +14,7 @@ export default function App() {
       <Hero />
       <About />
       <Services />
+      <Projects />
       <Founders />
       <Contact />
     </div>

@@ -23,6 +23,7 @@ export function Navigation() {
     { label: 'Início', href: '#home' },
     { label: 'Sobre', href: '#about' },
     { label: 'Serviços', href: '#services' },
+    { label: 'Projetos', href: '#projects' },
     { label: 'Fundadores', href: '#founders' },
     { label: 'Contato', href: '#contact' },
   ];
@@ -31,7 +32,7 @@ export function Navigation() {
     e.preventDefault();
     const element = document.querySelector(href);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      element.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
       setIsMobileMenuOpen(false);
     }
   };
@@ -63,7 +64,7 @@ export function Navigation() {
           </motion.div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-4 lg:space-x-8">
             {navItems.map((item) => (
               <motion.a
                 key={item.label}
