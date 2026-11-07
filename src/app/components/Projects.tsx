@@ -28,9 +28,9 @@ function renderProject(project: (typeof projects)[number]) {
                 <p className="text-gray-300 leading-relaxed mb-5">{project.description}</p>
                 <a href={project.url} target="_blank" rel="noopener noreferrer" className="project-link">Conhecer {project.name}<ArrowUpRight size={18} aria-hidden="true" /><span className="sr-only"> (abre em nova aba)</span></a>
                 {project.name === 'Betina' && (
-                  <div className="flex flex-wrap gap-3 mt-4">
-                    <button type="button" disabled className="project-store-pending">Google Play <span>Em breve</span></button>
-                    <button type="button" disabled className="project-store-pending">App Store <span>Em breve</span></button>
+                  <div className="flex flex-wrap gap-x-6 gap-y-3 mt-4">
+                    <a className="project-link" href="https://play.google.com/store/apps/details?id=com.astratech.betina" target="_blank" rel="noopener noreferrer">Google Play<ArrowUpRight size={18} aria-hidden="true" /><span className="sr-only"> (abre em nova aba)</span></a>
+                    <a className="project-link" href="https://apps.apple.com/br/app/betina/id6794507591" target="_blank" rel="noopener noreferrer">App Store<ArrowUpRight size={18} aria-hidden="true" /><span className="sr-only"> (abre em nova aba)</span></a>
                   </div>
                 )}
               </div>

@@ -11,8 +11,6 @@
 .project-copy { padding: 24px; }
 .project-link { display: inline-flex; align-items: center; gap: 8px; color: #86efac; font-weight: 600; }
 .project-link:hover { color: #bbf7d0; }
-.project-store-pending { display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border: 1px solid #4b5563; border-radius: 8px; background: #111827; color: #d1d5db; cursor: not-allowed; }
-.project-store-pending span { font-size: 12px; color: #9ca3af; }
 .projects-section a:focus-visible { outline: 3px solid #86efac; outline-offset: 4px; }
 .project-preview:focus-visible { outline-offset: -4px; }
 .cooktime-screens { display: flex; justify-content: center; align-items: center; gap: 16px; aspect-ratio: 16 / 10; padding: 16px; min-width: 0; }

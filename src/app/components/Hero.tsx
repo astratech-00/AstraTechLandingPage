@@ -1,11 +1,46 @@
-import { motion } from 'motion/react';
+import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } from 'motion/react';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { ImageWithFallback } from './ui/ImageWithFallback';
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 const mascote2 = new URL('../../assets/mascote-2-svg.svg', import.meta.url).href;
 
+const ENTRY_DURATION = 1.8;
+const FLOAT_DURATION = 6;
+
 export function Hero() {
+  const reduceMotion = useReducedMotion();
+
+  // Robô segue o mouse: posição normalizada (-1..1) do cursor em relação ao centro do robô
+  const robotAreaRef = useRef<HTMLDivElement>(null);
+  const [finePointer, setFinePointer] = useState(false);
+  const pointerX = useMotionValue(0);
+  const pointerY = useMotionValue(0);
+  const springCfg = { stiffness: 60, damping: 14, mass: 0.8 };
+  const followX = useSpring(useTransform(pointerX, [-1, 1], [-28, 28]), springCfg);
+  const followY = useSpring(useTransform(pointerY, [-1, 1], [-20, 20]), springCfg);
+  const followRotate = useSpring(useTransform(pointerX, [-1, 1], [-10, 10]), springCfg);
+
+  useEffect(() => {
+    if (reduceMotion || !window.matchMedia('(pointer: fine)').matches) return;
+    setFinePointer(true);
+    const onMove = (e: PointerEvent) => {
+      const el = robotAreaRef.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      const clamp = (v: number) => Math.max(-1, Math.min(1, v));
+      pointerX.set(clamp((e.clientX - (r.left + r.width / 2)) / (window.innerWidth / 2)));
+      pointerY.set(clamp((e.clientY - (r.top + r.height / 2)) / (window.innerHeight / 2)));
+    };
+    const onLeave = () => { pointerX.set(0); pointerY.set(0); };
+    window.addEventListener('pointermove', onMove);
+    document.documentElement.addEventListener('pointerleave', onLeave);
+    return () => {
+      window.removeEventListener('pointermove', onMove);
+      document.documentElement.removeEventListener('pointerleave', onLeave);
+    };
+  }, [reduceMotion, pointerX, pointerY]);
+
   return (
     <section
       id="home"
@@ -178,132 +213,123 @@ export function Hero() {
             </motion.div>
           </div>
 
-          {/* Right side - 3D Robot */}
-          <div className="relative h-[600px] flex items-center justify-center">
-            {/* Main Robot with dramatic 3D effects */}
+          {/* Right side - Robot: entrada com voo e depois flutuação contínua */}
+          <div ref={robotAreaRef} className="relative h-[600px] flex items-center justify-center">
+            {/* Anéis orbitais (ficam parados enquanto o robô flutua) */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.5, rotateY: -45 }}
-              animate={{ 
-                opacity: 1, 
-                scale: 1,
-                rotateY: 0,
-                y: [0, -20, 0],
-              }}
+              initial={{ opacity: 0, scale: 0.6 }}
+              animate={{ opacity: 1, scale: 1, rotateZ: reduceMotion ? 0 : 360 }}
               transition={{
-                opacity: { duration: 1, delay: 0.3 },
-                scale: { duration: 1, delay: 0.3 },
-                rotateY: { duration: 1, delay: 0.3 },
-                y: {
-                  duration: 4,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }
+                opacity: { duration: 1.2, delay: 0.4 },
+                scale: { duration: 1.2, delay: 0.4 },
+                rotateZ: { duration: 40, repeat: Infinity, ease: 'linear' },
               }}
-              className="relative z-20"
-              style={{ 
-                transformStyle: 'preserve-3d',
-                perspective: '1200px'
-              }}
+              className="absolute w-[480px] h-[480px] max-w-[90vw] max-h-[90vw] border-2 border-green-400/25 rounded-full pointer-events-none"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.6 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 1.4, delay: 0.6 }}
+              className="absolute w-[300px] h-[300px] border border-emerald-400/20 rounded-full pointer-events-none"
+            />
+
+            {/* Brilho de fundo */}
+            <motion.div
+              animate={reduceMotion ? undefined : { opacity: [0.35, 0.55, 0.35] }}
+              transition={{ duration: FLOAT_DURATION, repeat: Infinity, ease: 'easeInOut' }}
+              className="absolute w-72 h-72 bg-green-500/30 blur-[90px] rounded-full pointer-events-none"
+            />
+
+            {/* Sombra no "chão": aparece quando o robô chega e encolhe quando ele sobe, dando sensação de altura */}
+            <motion.div
+              initial={reduceMotion ? false : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: reduceMotion ? 0 : ENTRY_DURATION * 0.7 }}
+              className="absolute bottom-20 left-1/2 -ml-24 w-48 h-6 pointer-events-none"
             >
               <motion.div
-                animate={{
-                  rotateY: [0, 10, -10, 0],
-                  rotateX: [0, 5, -5, 0],
-                }}
+                animate={reduceMotion ? undefined : { scaleX: [1, 0.7, 0.88, 1], opacity: [0.55, 0.28, 0.42, 0.55] }}
+                transition={{ duration: FLOAT_DURATION, times: [0, 0.3, 0.65, 1], delay: ENTRY_DURATION, repeat: Infinity, ease: 'easeInOut' }}
+                className="w-full h-full bg-green-400/70 blur-xl rounded-[50%]"
+              />
+            </motion.div>
+
+            {/* 1) Entrada: o robô chega voando de baixo/direita, passa do ponto e se acomoda */}
+            <motion.div
+              initial={reduceMotion ? false : { opacity: 0, x: 220, y: 260, rotate: 35, scale: 0.4 }}
+              animate={{
+                opacity: 1,
+                x: [220, -30, 12, 0],
+                y: [260, -70, 10, 0],
+                rotate: [35, -14, 6, 0],
+                scale: [0.4, 1.08, 0.98, 1],
+              }}
+              transition={
+                reduceMotion
+                  ? { duration: 0 }
+                  : {
+                      duration: ENTRY_DURATION,
+                      times: [0, 0.55, 0.8, 1],
+                      ease: [0.22, 1, 0.36, 1],
+                      opacity: { duration: 0.4 },
+                    }
+              }
+              className="relative z-20"
+            >
+              {/* 2) Arrastável: dá para puxar o robô; ao soltar ele volta com efeito mola */}
+              <motion.div
+                drag={finePointer}
+                dragSnapToOrigin
+                dragElastic={0.35}
+                dragTransition={{ bounceStiffness: 120, bounceDamping: 10 }}
+                whileDrag={{ scale: 1.08, cursor: 'grabbing' }}
+                className={finePointer ? 'cursor-grab' : undefined}
+              >
+              {/* 3) Segue o mouse: inclina e desliza levemente na direção do cursor */}
+              <motion.div style={{ x: followX, y: followY, rotate: followRotate }}>
+              {/* 4) Flutuação: sobe e desce devagar, com leve balanço, como em gravidade zero */}
+              <motion.div
+                animate={
+                  reduceMotion
+                    ? undefined
+                    : {
+                        y: [0, -22, -8, 0],
+                        rotate: [0, -3, 2.5, 0],
+                        x: [0, 4, -3, 0],
+                      }
+                }
                 transition={{
-                  duration: 8,
+                  duration: FLOAT_DURATION,
+                  times: [0, 0.3, 0.65, 1],
+                  delay: ENTRY_DURATION,
                   repeat: Infinity,
-                  ease: "easeInOut"
+                  ease: 'easeInOut',
                 }}
-                whileHover={{ 
-                  scale: 1.1,
-                  rotateY: 15,
-                  transition: { duration: 0.4 }
-                }}
-                className="relative cursor-pointer"
-                style={{ transformStyle: 'preserve-3d' }}
+                whileHover={reduceMotion ? undefined : { scale: 1.05, transition: { type: 'spring', stiffness: 200, damping: 14 } }}
+                className="relative"
               >
                 <ImageWithFallback
                   src={mascote2}
-                  alt="Astra Tech Robot"
-                  className="w-[400px] h-[400px] sm:w-[400px] sm:h-[400px] object-contain drop-shadow-[0_35px_70px_rgba(34,197,94,0.5)]"
-                  style={{
-                    filter: 'drop-shadow(0 0 80px rgba(34, 197, 94, 0.4))'
-                  }}
+                  alt="Mascote da Astra Tech, um robô astronauta flutuando"
+                  draggable={false}
+                  className="w-[320px] h-[320px] sm:w-[400px] sm:h-[400px] object-contain select-none pointer-events-none"
+                  style={{ filter: 'drop-shadow(0 0 60px rgba(34, 197, 94, 0.35))' }}
                 />
-
-                {/* Glowing base platform */}
-                <motion.div
-                  animate={{
-                    scale: [1, 1.2, 1],
-                    opacity: [0.3, 0.5, 0.3],
-                  }}
-                  transition={{
-                    duration: 3,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
-                  className="absolute -bottom-20 left-1/2 -translate-x-1/2 w-64 h-32 bg-green-500/40 blur-3xl rounded-full"
-                />
-
-                {/* Orbiting rings */}
-                <motion.div
-                  animate={{
-                    rotateZ: 360,
-                    scale: [1, 1.1, 1],
-                  }}
-                  transition={{
-                    rotateZ: { duration: 10, repeat: Infinity, ease: "linear" },
-                    scale: { duration: 3, repeat: Infinity, ease: "easeInOut" }
-                  }}
-                  className="absolute inset-0 border-2 border-green-400/30 rounded-full"
-                  style={{
-                    transform: 'translateZ(-30px) scale(1.2)',
-                    transformStyle: 'preserve-3d'
-                  }}
-                />
-                <motion.div
-                  animate={{
-                    rotateZ: -360,
-                    scale: [1.1, 1, 1.1],
-                  }}
-                  transition={{
-                    rotateZ: { duration: 15, repeat: Infinity, ease: "linear" },
-                    scale: { duration: 4, repeat: Infinity, ease: "easeInOut" }
-                  }}
-                  className="absolute inset-0 border-2 border-emerald-400/20 rounded-full scale-150"
-                  style={{ 
-                    transform: 'translateZ(-50px) scale(1.4)',
-                    transformStyle: 'preserve-3d'
-                  }}
-                />
-                
-                {/* Floating particles */}
-                {[...Array(8)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    animate={{
-                      y: [0, -100, 0],
-                      x: [0, Math.sin(i) * 50, 0],
-                      opacity: [0, 1, 0],
-                      scale: [0, 1, 0],
-                    }}
-                    transition={{
-                      duration: 4 + i * 0.5,
-                      repeat: Infinity,
-                      delay: i * 0.3,
-                      ease: "easeInOut"
-                    }}
-                    className="absolute w-2 h-2 bg-green-400 rounded-full blur-sm"
-                    style={{
-                      left: `${50 + Math.cos(i * 45) * 40}%`,
-                      top: `${50 + Math.sin(i * 45) * 40}%`,
-                    }}
-                  />
-                ))}
+              </motion.div>
+              </motion.div>
               </motion.div>
             </motion.div>
 
+            {/* Partículas subindo ao redor */}
+            {!reduceMotion && [...Array(8)].map((_, i) => (
+              <motion.div
+                key={i}
+                animate={{ y: [0, -100, 0], x: [0, Math.sin(i) * 40, 0], opacity: [0, 1, 0], scale: [0, 1, 0] }}
+                transition={{ duration: 4 + i * 0.5, repeat: Infinity, delay: ENTRY_DURATION + i * 0.3, ease: 'easeInOut' }}
+                className="absolute w-2 h-2 bg-green-400 rounded-full blur-sm pointer-events-none"
+                style={{ left: `${50 + Math.cos(i * 45) * 35}%`, top: `${50 + Math.sin(i * 45) * 35}%` }}
+              />
+            ))}
             {/* Additional floating elements around robot */}
             <motion.div
               animate={{

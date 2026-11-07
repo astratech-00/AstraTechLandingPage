@@ -18,7 +18,7 @@ export function Founders() {
       name: "Taynara Muniz",
       role: "Co-Fundadora & Especialista em UX/UI",
       image: taynara,
-      bio: "Especialista em Experiência do Usuário, com atuação também em Análise de Requisitos. A experiência conecta necessidades do negócio e do usuário, com foco na criação de soluções eficientes. Possui experiência em pesquisa, levantamento e análise de necessidades do projeto, construção de fluxos e design de interfaces.",
+      bio: "Especialista em Experiência do Usuário, com atuação também em Análise de Requisitos. A experiência conecta necessidades do negócio e do usuário, com foco na criação de soluções eficientes. Possui experiência em pesquisa, levantamento e análise de necessidades do projeto, construção de fluxos e design de interfaces. Atualmente atua na AGU – Advocacia-Geral da União.",
       linkedin: "https://www.linkedin.com/in/taynaramuniz/",
       portifolio: "https://taynaramuniz.webflow.io/",
       email: "taynaramunizg@gmail.com"
@@ -27,7 +27,7 @@ export function Founders() {
       name: "Thiago Lago",
       role: "Co-Fundador & Desenvolvedor",
       image: thiago,
-      bio: "Engenheiro de Software Sênior com mais de 8 anos de experiência em desenvolvimento frontend e mobile, atuando com as tecnologias mais modernas no mercado. Experiência na construção e evolução de sistemas escaláveis em diferentes setores, incluindo governo, automotivo e financeiro. Atuação em liderança técnica, modernização de arquiteturas legadas e desenvolvimento de aplicações web e mobile com foco em performance, qualidade de código e experiência do usuário.",
+      bio: "Engenheiro de Software Sênior com mais de 8 anos de experiência em desenvolvimento frontend e mobile, atuando com as tecnologias mais modernas no mercado. Experiência na construção e evolução de sistemas escaláveis em diferentes setores, incluindo governo, automotivo e financeiro. Atuação em liderança técnica, modernização de arquiteturas legadas e desenvolvimento de aplicações web e mobile com foco em performance, qualidade de código e experiência do usuário. Atualmente atua na AGU – Advocacia-Geral da União.",
       linkedin: "https://www.linkedin.com/in/thiagolago/",
       portifolio: "https://github.com/thiagolago1",
       email: "thiagolago1@gmail.com"
