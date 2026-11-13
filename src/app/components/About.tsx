@@ -1,75 +1,102 @@
-import { motion } from 'motion/react';
-import { useInView } from 'motion/react';
-import { useRef } from 'react';
-import { Code2, Lightbulb, Rocket } from 'lucide-react';
+import React from 'react';
+import { FolderIcon, Github, LinkedinIcon, Mail } from 'lucide-react';
+import taynara from '../../assets/taynara.jpeg';
+import thiago from '../../assets/thiago.jpeg';
+
+const founders = [
+  {
+    name: 'Taynara Muniz',
+    role: 'Cofundadora · UX/UI',
+    image: taynara,
+    imageAlt: 'Retrato de Taynara Muniz',
+    bio: 'Especialista em Experiência do Usuário e também em análise de requisitos. Conecta o que o negócio precisa ao que a pessoa do outro lado da tela quer: pesquisa, fluxos e design de interfaces. Atua hoje na AGU – Advocacia-Geral da União.',
+    links: [
+      { label: 'LinkedIn', href: 'https://www.linkedin.com/in/taynaramuniz/', Icon: LinkedinIcon },
+      { label: 'Portfólio', href: 'https://taynaramuniz.webflow.io/', Icon: FolderIcon },
+      { label: 'Email', href: 'mailto:taynaramunizg@gmail.com', Icon: Mail },
+    ],
+  },
+  {
+    name: 'Thiago Lago',
+    role: 'Cofundador · Desenvolvimento',
+    image: thiago,
+    imageAlt: 'Retrato de Thiago Lago',
+    bio: 'Engenheiro de Software Sênior, com mais de 8 anos de experiência. Já construiu e modernizou sistemas escaláveis em governo, automotivo e financeiro, e lidera tecnicamente o que desenvolve. Atua hoje na AGU – Advocacia-Geral da União.',
+    links: [
+      { label: 'LinkedIn', href: 'https://www.linkedin.com/in/thiagolago/', Icon: LinkedinIcon },
+      { label: 'GitHub', href: 'https://github.com/thiagolago1', Icon: Github },
+      { label: 'Email', href: 'mailto:thiagolago1@gmail.com', Icon: Mail },
+    ],
+  },
+];
 
 export function About() {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, amount: 0.3 });
-
-  const values = [
-    {
-      icon: <Code2 className="w-8 h-8" />,
-      title: "Expertise Técnica",
-      description: "Domínio das tecnologias mais modernas do mercado"
-    },
-    {
-      icon: <Lightbulb className="w-8 h-8" />,
-      title: "Inovação",
-      description: "Soluções criativas para desafios complexos"
-    },
-    {
-      icon: <Rocket className="w-8 h-8" />,
-      title: "Agilidade",
-      description: "Desenvolvimento rápido e eficiente"
-    }
-  ];
-
   return (
-    <section id="about" ref={ref} className="py-20 relative overflow-hidden">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-16"
+    <section
+      id="quem-somos"
+      aria-labelledby="quem-somos-titulo"
+      className="scroll-mt-16 bg-paper py-20 md:py-28"
+    >
+      <div className="wrap">
+        <h2
+          id="quem-somos-titulo"
+          className="max-w-[18ch] text-[clamp(2.25rem,1.3rem+4vw,4.75rem)] leading-[1] tracking-[-0.035em]"
         >
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6">
-            <span className="bg-gradient-to-r from-green-400 to-emerald-600 bg-clip-text text-transparent">
-              Sobre a Astra Tech
-            </span>
-          </h2>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            Uma empresa independente formada por profissionais apaixonados por tecnologia,
-            dedicados a criar soluções digitais que fazem a diferença.
-          </p>
-        </motion.div>
+          Taynara desenha. Thiago programa. <span className="text-brand-ink">Os dois respondem pelo resultado.</span>
+        </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {values.map((value, index) => (
-            <motion.div
-              key={value.title}
-              initial={{ opacity: 0, y: 50 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.8, delay: index * 0.2 }}
-              whileHover={{ 
-                scale: 1.05,
-                rotateY: 5,
-              }}
-              className="group relative bg-gradient-to-br from-gray-900 to-gray-800 border border-green-500/20 rounded-2xl p-8 hover:border-green-500/50 transition-all duration-300"
-              style={{ transformStyle: 'preserve-3d' }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative z-10">
-                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-green-500/50 group-hover:shadow-green-500/80 transition-shadow">
-                  <div className="text-white">{value.icon}</div>
+        <p className="text-lead mt-8 max-w-[46ch] text-ink-soft">
+          A Astra Tech é uma empresa independente e pequena de propósito: quem conversa com você é quem faz, do primeiro rascunho ao app na loja.
+        </p>
+
+        <ul className="mt-16 grid gap-x-12 gap-y-16 md:mt-24 lg:grid-cols-2">
+          {founders.map((f, i) => (
+            <li key={f.name} className={i === 1 ? 'lg:mt-24' : ''}>
+              <article className="grid gap-6 sm:grid-cols-[minmax(0,13rem)_1fr] sm:items-start lg:grid-cols-1 xl:grid-cols-[minmax(0,15rem)_1fr]">
+                <div className="relative max-w-[15rem]">
+                  <div
+                    aria-hidden="true"
+                    className={`absolute inset-0 translate-x-3 translate-y-3 rounded-[2rem] bg-brand ${
+                      i === 1 ? '-rotate-3' : 'rotate-3'
+                    }`}
+                  />
+                  <img
+                    src={f.image}
+                    alt={f.imageAlt}
+                    width={960}
+                    height={1280}
+                    loading="lazy"
+                    decoding="async"
+                    className="relative aspect-[4/5] w-full rounded-[2rem] border-2 border-ink object-cover object-top"
+                  />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-4">{value.title}</h3>
-                <p className="text-gray-400">{value.description}</p>
-              </div>
-            </motion.div>
+
+                <div>
+                  <h3 className="text-3xl font-extrabold">{f.name}</h3>
+                  <p className="mt-1 font-semibold text-brand-ink">{f.role}</p>
+                  <p className="mt-4 max-w-[46ch] text-ink-soft">{f.bio}</p>
+                  <ul className="mt-6 flex gap-3">
+                    {f.links.map(({ label, href, Icon }) => {
+                      const external = href.startsWith('http');
+                      return (
+                        <li key={label}>
+                          <a
+                            href={href}
+                            {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                            aria-label={`${label} de ${f.name}${external ? ' (abre em nova aba)' : ''}`}
+                            className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-ink text-ink transition-colors duration-200 hover:bg-ink hover:text-paper"
+                          >
+                            <Icon aria-hidden="true" className="h-5 w-5" />
+                          </a>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              </article>
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
     </section>
   );

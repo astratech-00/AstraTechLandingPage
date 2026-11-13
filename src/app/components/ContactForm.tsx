@@ -1,5 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
-import { motion } from 'motion/react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Send, CheckCircle } from 'lucide-react';
 import emailjs from '@emailjs/browser';
 
@@ -8,12 +7,14 @@ const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID as string |
 const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY as string | undefined;
 
 const COOLDOWN_MS = 10_000;
+const SUCCESS_VISIBLE_MS = 6_000;
+const FALLBACK_EMAIL = 'tech.astra00@gmail.com';
 
 type FormData = {
   name: string;
   email: string;
   message: string;
-  company: string;
+  company: string; // honeypot
 };
 
 type FormErrors = {
@@ -21,6 +22,9 @@ type FormErrors = {
   email?: string;
   message?: string;
 };
+
+const fieldClass =
+  'block w-full rounded-xl border-2 bg-white px-4 py-3 text-ink placeholder:text-ink-soft/70 transition-colors duration-150 focus:border-ink focus:outline-none focus-visible:ring-4 focus-visible:ring-brand';
 
 export function ContactForm() {
   const [formData, setFormData] = useState<FormData>({
@@ -33,23 +37,25 @@ export function ContactForm() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [sendFailed, setSendFailed] = useState(false);
+  const [cooldownNotice, setCooldownNotice] = useState(false);
   const [isCooldown, setIsCooldown] = useState(false);
   const cooldownTimeoutRef = useRef<number | null>(null);
+  const successTimeoutRef = useRef<number | null>(null);
+
+  useEffect(
+    () => () => {
+      if (cooldownTimeoutRef.current) window.clearTimeout(cooldownTimeoutRef.current);
+      if (successTimeoutRef.current) window.clearTimeout(successTimeoutRef.current);
+    },
+    []
+  );
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const { name, value } = e.target;
-
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-
-      setErrors((prev) => ({
-        ...prev,
-        [name]: undefined,
-      }));
+      setFormData((prev) => ({ ...prev, [name]: value }));
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
     },
     []
   );
@@ -58,20 +64,17 @@ export function ContactForm() {
     const newErrors: FormErrors = {};
 
     if (!data.name.trim()) {
-      newErrors.name = 'Nome é obrigatório.';
+      newErrors.name = 'Conta pra gente como você se chama.';
     }
 
     if (!data.email.trim()) {
-      newErrors.email = 'Email é obrigatório.';
-    } else {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(data.email)) {
-        newErrors.email = 'Informe um email válido.';
-      }
+      newErrors.email = 'Precisamos de um email para responder.';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+      newErrors.email = 'Esse email parece incompleto. Exemplo: nome@empresa.com';
     }
 
     if (!data.message.trim()) {
-      newErrors.message = 'Mensagem é obrigatória.';
+      newErrors.message = 'Escreva um pouco sobre a sua ideia, mesmo que seja curto.';
     }
 
     return newErrors;
@@ -79,13 +82,10 @@ export function ContactForm() {
 
   const startCooldown = useCallback(() => {
     setIsCooldown(true);
-
-    if (cooldownTimeoutRef.current) {
-      window.clearTimeout(cooldownTimeoutRef.current);
-    }
-
+    if (cooldownTimeoutRef.current) window.clearTimeout(cooldownTimeoutRef.current);
     cooldownTimeoutRef.current = window.setTimeout(() => {
       setIsCooldown(false);
+      setCooldownNotice(false);
       cooldownTimeoutRef.current = null;
     }, COOLDOWN_MS);
   }, []);
@@ -95,29 +95,29 @@ export function ContactForm() {
       e.preventDefault();
 
       if (isCooldown) {
-        setErrorMessage('Aguarde alguns segundos antes de enviar outra mensagem.');
+        setCooldownNotice(true);
         return;
       }
 
-      if (formData.company.trim()) {
-        return;
-      }
+      // honeypot preenchido: provavelmente robô, ignora em silêncio
+      if (formData.company.trim()) return;
 
       const validationErrors = validate(formData);
       if (Object.keys(validationErrors).length > 0) {
         setErrors(validationErrors);
+        const first = (['name', 'email', 'message'] as const).find((k) => validationErrors[k]);
+        if (first) document.getElementById(`contact-${first}`)?.focus();
         return;
       }
 
       if (!EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID || !EMAILJS_PUBLIC_KEY) {
-        setErrorMessage(
-          'Configuração de email não encontrada. Verifique as variáveis de ambiente.'
-        );
+        console.error('EmailJS: variáveis VITE_EMAILJS_* não configuradas neste build.');
+        setSendFailed(true);
         return;
       }
 
       setIsLoading(true);
-      setErrorMessage(null);
+      setSendFailed(false);
 
       try {
         await emailjs.send(
@@ -129,29 +129,21 @@ export function ContactForm() {
             email: formData.email,
             message: formData.message,
           },
-          {
-            publicKey: EMAILJS_PUBLIC_KEY,
-          }
+          { publicKey: EMAILJS_PUBLIC_KEY }
         );
 
         setIsSubmitted(true);
-        setFormData({
-          name: '',
-          email: '',
-          message: '',
-          company: '',
-        });
+        setFormData({ name: '', email: '', message: '', company: '' });
         setErrors({});
         startCooldown();
 
-        window.setTimeout(() => {
+        if (successTimeoutRef.current) window.clearTimeout(successTimeoutRef.current);
+        successTimeoutRef.current = window.setTimeout(() => {
           setIsSubmitted(false);
-        }, 3000);
+        }, SUCCESS_VISIBLE_MS);
       } catch (error) {
         console.error('Erro ao enviar email:', error);
-        setErrorMessage(
-          'Não foi possível enviar sua mensagem no momento. Tente novamente em instantes.'
-        );
+        setSendFailed(true);
       } finally {
         setIsLoading(false);
       }
@@ -159,116 +151,136 @@ export function ContactForm() {
     [formData, isCooldown, startCooldown, validate]
   );
 
+  const disabled = isLoading || isCooldown;
+
   return (
-    <div className="bg-gradient-to-br from-gray-900 to-gray-800 border border-green-500/20 rounded-2xl p-8">
-      {!isSubmitted ? (
-        <form onSubmit={handleSubmit} className="space-y-6" noValidate>
-          <div className="hidden">
-            <label htmlFor="company">Company</label>
+    <div className="rounded-[2rem] border-2 border-ink bg-paper p-6 text-ink shadow-[8px_8px_0_0_var(--ink)] sm:p-9">
+      {isSubmitted ? (
+        <div role="status" className="flex flex-col items-start gap-4 py-8">
+          <CheckCircle aria-hidden="true" className="h-14 w-14 text-brand-ink" />
+          <h3 className="text-3xl font-extrabold">Mensagem enviada!</h3>
+          <p className="max-w-[34ch] text-ink-soft">
+            Obrigado pelo contato. A gente lê com carinho e responde por email em breve.
+          </p>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+          {/* Honeypot: invisível para pessoas, tentador para robôs */}
+          <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
+            <label htmlFor="contact-company">Company</label>
             <input
-              id="company"
+              id="contact-company"
               name="company"
               type="text"
               autoComplete="off"
+              tabIndex={-1}
               value={formData.company}
               onChange={handleChange}
-              tabIndex={-1}
             />
           </div>
 
           <div>
-            <label htmlFor="name" className="block text-gray-300 mb-2 font-medium">
-              Nome
+            <label htmlFor="contact-name" className="mb-2 block font-bold">
+              Seu nome
             </label>
             <input
-              type="text"
-              id="name"
+              id="contact-name"
               name="name"
+              type="text"
+              autoComplete="name"
               value={formData.name}
               onChange={handleChange}
-              required
-              className="w-full px-4 py-3 bg-gray-900/50 border border-green-500/20 rounded-lg text-white placeholder-gray-500 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 transition-all"
-              placeholder="Seu nome"
+              aria-invalid={errors.name ? true : undefined}
+              aria-describedby={errors.name ? 'contact-name-error' : undefined}
+              placeholder="Como podemos te chamar?"
+              className={`${fieldClass} ${errors.name ? 'border-destructive' : 'border-ink/30'}`}
             />
-            {errors.name && <p className="mt-1 text-sm text-red-400">{errors.name}</p>}
-          </div>
-
-          <div>
-            <label htmlFor="email" className="block text-gray-300 mb-2 font-medium">
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-3 bg-gray-900/50 border border-green-500/20 rounded-lg text-white placeholder-gray-500 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 transition-all"
-              placeholder="seu@email.com"
-            />
-            {errors.email && <p className="mt-1 text-sm text-red-400">{errors.email}</p>}
-          </div>
-
-          <div>
-            <label htmlFor="message" className="block text-gray-300 mb-2 font-medium">
-              Mensagem
-            </label>
-            <textarea
-              id="message"
-              name="message"
-              value={formData.message}
-              onChange={handleChange}
-              required
-              rows={5}
-              className="w-full px-4 py-3 bg-gray-900/50 border border-green-500/20 rounded-lg text-white placeholder-gray-500 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 transition-all resize-none"
-              placeholder="Conte-nos sobre seu projeto..."
-            />
-            {errors.message && (
-              <p className="mt-1 text-sm text-red-400">{errors.message}</p>
+            {errors.name && (
+              <p id="contact-name-error" className="mt-2 text-[0.9375rem] font-semibold text-destructive">
+                {errors.name}
+              </p>
             )}
           </div>
 
-          {errorMessage && (
-            <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/30 rounded-md px-3 py-2">
-              {errorMessage}
+          <div>
+            <label htmlFor="contact-email" className="mb-2 block font-bold">
+              Seu email
+            </label>
+            <input
+              id="contact-email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              inputMode="email"
+              value={formData.email}
+              onChange={handleChange}
+              aria-invalid={errors.email ? true : undefined}
+              aria-describedby={errors.email ? 'contact-email-error' : undefined}
+              placeholder="nome@empresa.com"
+              className={`${fieldClass} ${errors.email ? 'border-destructive' : 'border-ink/30'}`}
+            />
+            {errors.email && (
+              <p id="contact-email-error" className="mt-2 text-[0.9375rem] font-semibold text-destructive">
+                {errors.email}
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label htmlFor="contact-message" className="mb-2 block font-bold">
+              Sobre o que vamos conversar?
+            </label>
+            <textarea
+              id="contact-message"
+              name="message"
+              rows={5}
+              value={formData.message}
+              onChange={handleChange}
+              aria-invalid={errors.message ? true : undefined}
+              aria-describedby={errors.message ? 'contact-message-error' : undefined}
+              placeholder="Pode ser um rascunho: o que você quer construir e para quem."
+              className={`${fieldClass} resize-y ${errors.message ? 'border-destructive' : 'border-ink/30'}`}
+            />
+            {errors.message && (
+              <p id="contact-message-error" className="mt-2 text-[0.9375rem] font-semibold text-destructive">
+                {errors.message}
+              </p>
+            )}
+          </div>
+
+          {sendFailed && (
+            <p
+              role="alert"
+              className="rounded-xl border-2 border-destructive bg-white px-4 py-3 text-[0.9375rem] font-medium text-destructive"
+            >
+              Não conseguimos enviar agora. Sem problema: escreva direto para{' '}
+              <a href={`mailto:${FALLBACK_EMAIL}`} className="font-bold underline underline-offset-2">
+                {FALLBACK_EMAIL}
+              </a>{' '}
+              que a gente responde.
             </p>
           )}
 
-          <motion.button
+          {cooldownNotice && (
+            <p role="status" className="text-[0.9375rem] font-semibold text-ink-soft">
+              Sua mensagem acabou de ser enviada. Espere alguns segundos para mandar outra.
+            </p>
+          )}
+
+          <button
             type="submit"
-            whileHover={!isLoading && !isCooldown ? { scale: 1.02 } : {}}
-            whileTap={!isLoading && !isCooldown ? { scale: 0.98 } : {}}
-            disabled={isLoading || isCooldown}
-            className={`w-full px-8 py-4 rounded-lg font-semibold flex items-center justify-center gap-2 shadow-lg transition-all
-              ${
-                isLoading || isCooldown
-                  ? 'bg-gray-600 cursor-not-allowed shadow-none'
-                  : 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-green-500/30 hover:shadow-green-500/50'
-              }`}
+            disabled={disabled}
+            aria-disabled={disabled}
+            className="group inline-flex min-h-14 w-full items-center justify-center gap-3 rounded-full bg-ink px-8 text-lg font-bold text-paper transition-transform duration-200 hover:-translate-y-0.5 disabled:translate-y-0 disabled:cursor-not-allowed disabled:bg-ink/55"
           >
-            {isLoading
-              ? 'Enviando...'
-              : isCooldown
-              ? 'Aguarde alguns segundos...'
-              : 'Enviar Mensagem'}
-            <Send className="w-5 h-5" />
-          </motion.button>
+            {isLoading ? 'Enviando...' : isCooldown ? 'Enviada! Aguarde um instante' : 'Enviar mensagem'}
+            <Send
+              aria-hidden="true"
+              className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1 group-disabled:translate-x-0"
+            />
+          </button>
         </form>
-      ) : (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="flex flex-col items-center justify-center py-12 text-center"
-        >
-          <CheckCircle className="w-16 h-16 text-green-400 mb-4" />
-          <h3 className="text-2xl font-bold text-white mb-2">Mensagem Enviada!</h3>
-          <p className="text-gray-400">
-            Obrigado pelo contato. Retornaremos em breve!
-          </p>
-        </motion.div>
       )}
     </div>
   );
 }
-
